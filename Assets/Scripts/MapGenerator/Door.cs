@@ -21,9 +21,14 @@ public class Door
         return this.direction;
     }
 
+    private int ToGridCoordinate(int coord)
+    {
+        return Mathf.FloorToInt(coord * 1.0f / Room.GRID_SIZE);
+    }
+
     public Vector2Int GetGridCoordinates()
     {
-        return new Vector2Int(coordinates.x / Room.GRID_SIZE, coordinates.y / Room.GRID_SIZE);
+        return new Vector2Int(ToGridCoordinate(coordinates.x), ToGridCoordinate(coordinates.y));
     }
 
     public Door GetMatching()
