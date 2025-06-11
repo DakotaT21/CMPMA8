@@ -15,12 +15,12 @@ public class MapGenerator : MonoBehaviour
     // this will limit the run time (about 10 is a good value 
     // during development, later you'll want to set it to 
     // something a bit higher, like 25-30)
-    public int MAX_SIZE = 10;
+    public int MAX_SIZE = 25;
 
     // set this to a high value when the generator works
     // for debugging it can be helpful to test with few rooms
     // and, say, a threshold of 100 iterations
-    public int THRESHOLD = 10000;
+    public int THRESHOLD = 1000;
 
     // keep the instantiated rooms and hallways here 
     private List<GameObject> generated_objects;
