@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
+using System.Linq;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class MapGenerator : MonoBehaviour
     public Room target;
 
     // Constraint: How big should the dungeon be at most
-    // this will limit the run time (~10 is a good value 
+    // this will limit the run time (about 10 is a good value 
     // during development, later you'll want to set it to 
     // something a bit higher, like 25-30)
     public int MAX_SIZE = 10;
@@ -19,7 +20,7 @@ public class MapGenerator : MonoBehaviour
     // set this to a high value when the generator works
     // for debugging it can be helpful to test with few rooms
     // and, say, a threshold of 100 iterations
-    public int THRESHOLD = 100;
+    public int THRESHOLD = 10000;
 
     // keep the instantiated rooms and hallways here 
     private List<GameObject> generated_objects;
@@ -44,6 +45,8 @@ public class MapGenerator : MonoBehaviour
     private int minX, maxX, minY, maxY;
     private int placedTargetCount;
     private Vector2Int targetPosition;
+
+    public int MAX_BOUND_DIFF = 7;    // how many cells wide/tall you allow during placement
 
 
     public void Generate()
@@ -107,6 +110,10 @@ public class MapGenerator : MonoBehaviour
         if (iterations > THRESHOLD)
             throw new System.Exception("Iteration limit exceeded");
 
+        // shuffle doors so different recursion orders get tried
+        doors = doors.OrderBy(_ => Random.value).ToList();
+
+
         // no more doors, check all constraints :contentReference[oaicite:2]{index=2}
         if (doors.Count == 0)
         {
@@ -125,10 +132,10 @@ public class MapGenerator : MonoBehaviour
             if (placedTargetCount != 1) return false;
 
             // roughly square shape
-            if (Mathf.Abs(maxX - minX) > 2 || Mathf.Abs(maxY - minY) > 2)
+            if (Mathf.Abs(maxX - minX) > MAX_BOUND_DIFF || Mathf.Abs(maxY - minY) > MAX_BOUND_DIFF)
                 return false;
 
-            // path from start to exit must traverse ?5 other rooms
+            // path from start to exit must traverse 5 or more other rooms
             if (pathLen < 6)
                 return false;
 
@@ -174,7 +181,7 @@ public class MapGenerator : MonoBehaviour
                 minY = Mathf.Min(minY, cell.y);
                 maxY = Mathf.Max(maxY, cell.y);
             }
-            if (Mathf.Abs(maxX - minX) > 2 || Mathf.Abs(maxY - minY) > 2)
+            if (Mathf.Abs(maxX - minX) > MAX_BOUND_DIFF || Mathf.Abs(maxY - minY) > MAX_BOUND_DIFF)
             {
                 minX = oldMinX; maxX = oldMaxX; minY = oldMinY; maxY = oldMaxY;
                 continue;
