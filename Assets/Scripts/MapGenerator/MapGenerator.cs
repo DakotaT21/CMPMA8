@@ -125,8 +125,8 @@ public class MapGenerator : MonoBehaviour
                 $"pathLen={pathLen}"
             );
 
-            // need at least 5 rooms
-            if (depth < 7) return false;
+            // Make sure you placed exactly MAX_SIZE rooms
+            if (depth != MAX_SIZE) return false;
 
             // exactly one exit room
             if (placedTargetCount != 1) return false;
@@ -154,14 +154,29 @@ public class MapGenerator : MonoBehaviour
         {
             Room candidate = WeightedPickAndRemove(candidates);
 
+            // Only allow exit as the final room
+            bool isExit = (candidate == target);
+
+            // If we are about to place the last room (MAX_SIZE-th), only allow target
+            if (depth == MAX_SIZE - 1 && !isExit)
+                continue;
+
+            // If we are not at the last room, do not allow placing target
+            if (depth < MAX_SIZE - 1 && isExit)
+                continue;
+
+            // If depth is already at MAX_SIZE, do not place any more rooms
+            if (depth >= MAX_SIZE)
+                continue;
+
             // must have matching door
             if (!candidate.HasDoorOnSide(doorToConnect.GetMatchingDirection()))
                 continue;
 
             // enforce single exit
-            bool isExit = (candidate == target);
             if (isExit && placedTargetCount >= 1)
                 continue;
+
 
             // compute where to place this room
             Vector2Int offset = GetPlacementOffset(doorToConnect, candidate);
@@ -172,7 +187,7 @@ public class MapGenerator : MonoBehaviour
                 if (occupied.Contains(cell)) { overlap = true; break; }
             if (overlap) continue;
 
-            // update bounding box and prune shape if already invalid
+            //// update bounding box and prune shape if already invalid
             int oldMinX = minX, oldMaxX = maxX, oldMinY = minY, oldMaxY = maxY;
             foreach (var cell in candidate.GetGridCoordinates(offset))
             {
@@ -217,7 +232,7 @@ public class MapGenerator : MonoBehaviour
             if (isExit) placedTargetCount--;
             foreach (var cell in candidate.GetGridCoordinates(offset))
                 occupied.Remove(cell);
-            minX = oldMinX; maxX = oldMaxX; minY = oldMinY; maxY = oldMaxY;
+            //minX = oldMinX; maxX = oldMaxX; minY = oldMinY; maxY = oldMaxY;
         }
 
         // no candidate succeeded
